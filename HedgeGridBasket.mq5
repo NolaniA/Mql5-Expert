@@ -13,9 +13,9 @@ CTrade trade;
 //====================================================
 input double Lot            = 0.01;
 input double LotStep        = 0.01;
-input double LotRatio       = 3.0;
+input double LotRatio       = 1.2;
 
-input int    DistancePoints = 500;
+input int    DistancePoints = 100;
 
 input int    EMAFastPeriod  = 8;
 input int    EMASlowPeriod  = 21;
@@ -290,6 +290,72 @@ int CountSellPosition()
 
 
    return count;
+}
+
+
+//+------------------------------------------------------------------+
+//| Total BUY Lot                                                    |
+//+------------------------------------------------------------------+
+double GetTotalBuyLot()
+{
+   double total_lot = 0.0;
+
+   for(int i = PositionsTotal() - 1; i >= 0; i--)
+   {
+      ulong ticket = PositionGetTicket(i);
+
+      if(ticket == 0)
+         continue;
+
+      if(!PositionSelectByTicket(ticket))
+         continue;
+
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+
+      if((ulong)PositionGetInteger(POSITION_MAGIC) != MagicNumber)
+         continue;
+
+      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_BUY)
+         continue;
+
+      total_lot += PositionGetDouble(POSITION_VOLUME);
+   }
+
+   return NormalizeDouble(total_lot, GetVolumeDigits());
+}
+
+
+//+------------------------------------------------------------------+
+//| Total SELL Lot                                                   |
+//+------------------------------------------------------------------+
+double GetTotalSellLot()
+{
+   double total_lot = 0.0;
+
+   for(int i = PositionsTotal() - 1; i >= 0; i--)
+   {
+      ulong ticket = PositionGetTicket(i);
+
+      if(ticket == 0)
+         continue;
+
+      if(!PositionSelectByTicket(ticket))
+         continue;
+
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+
+      if((ulong)PositionGetInteger(POSITION_MAGIC) != MagicNumber)
+         continue;
+
+      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_SELL)
+         continue;
+
+      total_lot += PositionGetDouble(POSITION_VOLUME);
+   }
+
+   return NormalizeDouble(total_lot, GetVolumeDigits());
 }
 
 
@@ -1318,7 +1384,7 @@ void CreatePanel()
       0,
       bg,
       OBJPROP_YSIZE,
-      335
+      360
    );
 
 
@@ -1354,18 +1420,19 @@ void CreatePanel()
    );
 
 
-   CreatePanelLabel("TITLE",    25, 30, 12, clrGold);
-   CreatePanelLabel("STATUS",   25, 58, 10, clrWhite);
-   CreatePanelLabel("POSITION", 25, 82, 10, clrWhite);
-   CreatePanelLabel("LEVEL",    25,106, 10, clrWhite);
-   CreatePanelLabel("LOTS",     25,130, 10, clrWhite);
-   CreatePanelLabel("RATIO",    25,154, 10, clrWhite);
-   CreatePanelLabel("EMA",      25,178, 10, clrWhite);
-   CreatePanelLabel("TREND",    25,202, 10, clrWhite);
-   CreatePanelLabel("PRICE",    25,226, 10, clrWhite);
-   CreatePanelLabel("RANGE",    25,250, 10, clrWhite);
-   CreatePanelLabel("ACCOUNT",  25,274, 10, clrWhite);
-   CreatePanelLabel("FLOATING", 25,298, 10, clrWhite);
+   CreatePanelLabel("TITLE",     25, 30, 12, clrGold);
+   CreatePanelLabel("STATUS",    25, 58, 10, clrWhite);
+   CreatePanelLabel("POSITION",  25, 82, 10, clrWhite);
+   CreatePanelLabel("LEVEL",     25,106, 10, clrWhite);
+   CreatePanelLabel("LOTS",      25,130, 10, clrWhite);
+   CreatePanelLabel("TOTALLOT",  25,154, 10, clrWhite);
+    CreatePanelLabel("RATIO",     25,178, 10, clrWhite);
+   CreatePanelLabel("EMA",       25,202, 10, clrWhite);
+   CreatePanelLabel("TREND",     25,226, 10, clrWhite);
+   CreatePanelLabel("PRICE",     25,250, 10, clrWhite);
+   CreatePanelLabel("RANGE",     25,274, 10, clrWhite);
+   CreatePanelLabel("ACCOUNT",   25,298, 10, clrWhite);
+   CreatePanelLabel("FLOATING",  25,322, 10, clrWhite);
 
 
    SetPanelText(
@@ -1430,6 +1497,14 @@ void UpdatePanel()
       CountSellPosition();
 
 
+
+
+    double total_buy_lot =
+       GetTotalBuyLot();
+
+
+    double total_sell_lot =
+       GetTotalSellLot();
    double balance =
       AccountInfoDouble(
          ACCOUNT_BALANCE
@@ -1563,9 +1638,27 @@ void UpdatePanel()
       clrWhite
    );
 
+    SetPanelText(
+       "TOTALLOT",
+       "TOTAL LOT  : BUY "
+      +
+       DoubleToString(
+          total_buy_lot,
+          GetVolumeDigits()
+      )
+      +
+       " | SELL "
+      +
+       DoubleToString(
+          total_sell_lot,
+          GetVolumeDigits()
+      ),
+       clrWhite
+   );
 
-   SetPanelText(
-      "RATIO",
+
+    SetPanelText(
+       "RATIO",
       "RATIO      : TREND "
       +
       DoubleToString(
