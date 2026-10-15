@@ -193,73 +193,140 @@ bool ReadIndicatorState(const int shift, IndicatorState &s)
 // >>> WRITE YOUR ENTRY / EXIT CONDITIONS HERE <<<
 // Return true when you want the EA to perform that action.
 //====================================================================
+// =====================================
+// BUY: Green 1-3 candles > Red 1 candle
+// =====================================
 bool BuyCondition(const IndicatorState &s)
 {
-   // Example only - replace with your own logic:
-   // return (s.fast_ma > s.slow_ma &&
-   //         s.macd_main > s.macd_signal &&
-   //         s.rsi > 50.0);
+   for(int greenCount = 1; greenCount <= 3; greenCount++)
+   {
+      double totalGreenBody = 0.0;
+      bool validGreen = true;
 
-//   return (
-//      s.rsi < 30
-//      && s.macd_main_prev[1] <=0
-//      && s.macd_main_prev[1] > s.macd_main_prev[2]
-//      && s.macd_main_prev[2] > s.macd_main_prev[3]
-//      && s.macd_main_prev[3] > s.macd_main_prev[4]
-//      
-//   );
+      for(int i = 0; i < greenCount; i++)
+      {
+         double open  = s.ohlcv_open[i];
+         double close = s.ohlcv_close[i];
+         double high  = s.ohlcv_high[i];
+         double low   = s.ohlcv_low[i];
 
-   return (
-      s.ohlcv_close[0] > s.ohlcv_open[0]
-      && MathAbs(s.ohlcv_close[0] - s.ohlcv_open[0]) > MathAbs(s.ohlcv_high[0] - s.ohlcv_close[0])
-      && MathAbs(s.ohlcv_close[0] - s.ohlcv_open[0]) > MathAbs(s.ohlcv_open[0] - s.ohlcv_low[0])
-      
-      // Candle [2] bearish
-      && s.ohlcv_close[1] < s.ohlcv_open[1]
-      && MathAbs(s.ohlcv_close[1] - s.ohlcv_open[1]) > MathAbs(s.ohlcv_high[1] - s.ohlcv_open[1])
-      && MathAbs(s.ohlcv_close[1] - s.ohlcv_open[1]) > MathAbs(s.ohlcv_close[1] - s.ohlcv_low[1])
-      
-      // Bullish body > Bearish body
-      && MathAbs(s.ohlcv_close[0] - s.ohlcv_open[0]) > MathAbs(s.ohlcv_close[1] - s.ohlcv_open[1])
-      
-   );
+         double body      = MathAbs(close - open);
+         double upperWick = MathAbs(high - close);
+         double lowerWick = MathAbs(open - low);
+
+         if(close <= open ||
+            body <= upperWick ||
+            body <= lowerWick)
+         {
+            validGreen = false;
+            break;
+         }
+
+         totalGreenBody += body;
+      }
+
+      if(!validGreen)
+         continue;
+
+      int redIndex = greenCount;
+
+      double redOpen  = s.ohlcv_open[redIndex];
+      double redClose = s.ohlcv_close[redIndex];
+      double redHigh  = s.ohlcv_high[redIndex];
+      double redLow   = s.ohlcv_low[redIndex];
+
+      double redBody      = MathAbs(redClose - redOpen);
+      double redUpperWick = MathAbs(redHigh - redOpen);
+      double redLowerWick = MathAbs(redClose - redLow);
+
+      if(redClose >= redOpen ||
+         redBody <= redUpperWick ||
+         redBody <= redLowerWick)
+         continue;
+
+      if(totalGreenBody > redBody)
+         return true;
+   }
 
    return false;
 }
 
+
+// =====================================
+// SELL: Red 1-3 candles > Green 1 candle
+// =====================================
 bool SellCondition(const IndicatorState &s)
 {
-   // Example only - replace with your own logic:
-   // return (s.fast_ma < s.slow_ma &&
-   //         s.macd_main < s.macd_signal &&
-   //         s.rsi < 50.0);
-
-   return false;
+   return CloseBuyCondition(s);
 }
 
+
+// =====================================
+// CLOSE BUY: Red 1-3 > Green 1
+// =====================================
 bool CloseBuyCondition(const IndicatorState &s)
 {
-   // Example only:
-   // return (s.fast_ma < s.slow_ma);
-   
-//   return (
-//      
-//      s.macd_main_prev[1] < 0
-//      && s.macd_main_prev[2] >= 0
-//      && s.rsi > 70
-//   );
+   for(int redCount = 1; redCount <= 3; redCount++)
+   {
+      double totalRedBody = 0.0;
+      bool validRed = true;
+
+      for(int i = 0; i < redCount; i++)
+      {
+         double open  = s.ohlcv_open[i];
+         double close = s.ohlcv_close[i];
+         double high  = s.ohlcv_high[i];
+         double low   = s.ohlcv_low[i];
+
+         double body      = MathAbs(close - open);
+         double upperWick = MathAbs(high - open);
+         double lowerWick = MathAbs(close - low);
+
+         if(close >= open ||
+            body <= upperWick ||
+            body <= lowerWick)
+         {
+            validRed = false;
+            break;
+         }
+
+         totalRedBody += body;
+      }
+
+      if(!validRed)
+         continue;
+
+      int greenIndex = redCount;
+
+      double greenOpen  = s.ohlcv_open[greenIndex];
+      double greenClose = s.ohlcv_close[greenIndex];
+      double greenHigh  = s.ohlcv_high[greenIndex];
+      double greenLow   = s.ohlcv_low[greenIndex];
+
+      double greenBody      = MathAbs(greenClose - greenOpen);
+      double greenUpperWick = MathAbs(greenHigh - greenClose);
+      double greenLowerWick = MathAbs(greenOpen - greenLow);
+
+      if(greenClose <= greenOpen ||
+         greenBody <= greenUpperWick ||
+         greenBody <= greenLowerWick)
+         continue;
+
+      if(totalRedBody > greenBody)
+         return true;
+   }
 
    return false;
 }
 
+
+// =====================================
+// CLOSE SELL: Green 1-3 > Red 1
+// =====================================
 bool CloseSellCondition(const IndicatorState &s)
 {
-   // Example only:
-   // return (s.fast_ma > s.slow_ma);
-
-   return false;
+   return BuyCondition(s);
 }
-
 //====================================================================
 // POSITION HELPERS
 //====================================================================
