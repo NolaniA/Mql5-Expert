@@ -239,9 +239,10 @@ bool BuyCondition(const IndicatorState &s)
       double redUpperWick = MathAbs(redHigh - redOpen);
       double redLowerWick = MathAbs(redClose - redLow);
 
-      if(redClose >= redOpen ||
-         redBody <= redUpperWick ||
-         redBody <= redLowerWick)
+      if(redClose >= redOpen 
+         || redBody <= redUpperWick 
+         || redBody <= redLowerWick
+         )
          continue;
 
       if(totalGreenBody > redBody)
@@ -307,9 +308,9 @@ bool CloseBuyCondition(const IndicatorState &s)
       double greenUpperWick = MathAbs(greenHigh - greenClose);
       double greenLowerWick = MathAbs(greenOpen - greenLow);
 
-      if(greenClose <= greenOpen ||
-         greenBody <= greenUpperWick ||
-         greenBody <= greenLowerWick)
+      if(greenClose <= greenOpen 
+         || greenBody <= greenUpperWick 
+         || greenBody <= greenLowerWick)
          continue;
 
       if(totalRedBody > greenBody)
