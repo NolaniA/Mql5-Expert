@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//|       XAU_MTF_SMA_8_12_M5_EA_RecoveryLot.mq5       |
+//|       XAU_MTF_SMA_8_12_M5_EA_BASELINE_001.mq5       |
 //|  M5 pullback entries filtered by selected MTF SMA 8/12 trends.   |
 //|  Optional swing SL, three TP modes, hedging and basket POINTS exit.      |
 //+------------------------------------------------------------------+
