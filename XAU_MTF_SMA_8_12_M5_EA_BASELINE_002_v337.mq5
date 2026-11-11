@@ -1,4 +1,4 @@
-﻿//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
 //| XAU_MTF_SMA_8_12_M5_EA_BASELINE_002.mq5                          |
 //| M5 SMA(8,12) multi-timeframe entry, basket and recovery management |
 //| Responsive status UI: grouped cards, maximum two columns.          |
@@ -199,11 +199,11 @@ input bool UseSMAPullbackCandle2WickFilter = true;
 // 04.6 ENTRY ONLY: absolute opening gap between M5 [1] Open and [2] Close.
 // Default ON; 100 broker points. OFF skips only this gap check.
 input bool UseSMAPullbackOpenGapFilter = true;
-input int SMAPullbackMaxOpenGapPoints = 100;
+input int SMAPullbackMaxOpenGapPoints = 200;
 // Entry 04.6 ONLY: opening gap between [2] Open and [3] Close.
 // OFF skips only this check; default ON with a 200 broker-point limit.
 input bool UseSMAPullbackOpenGap23Filter = true;
-input int SMAPullbackMaxOpenGap23Points = 200;
+input int SMAPullbackMaxOpenGap23Points = 150;
 
 input group "04.7 | Entry - OR SMA Cross + 1-Bar Confirmation"
 // Confirmed SMA Cross is the only SMA Cross ENTRY; indicator exits remain independent.
